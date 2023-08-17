@@ -1,0 +1,13 @@
+package states;
+
+public class Broken implements State{
+
+    /**
+     * getState()
+     * @return the current state of the racer "Broken"
+     */
+    @Override
+    public String getState() {
+        return "Broken";
+    }
+}

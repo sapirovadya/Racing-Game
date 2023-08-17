@@ -1,0 +1,13 @@
+package states;
+
+public class Disabled implements State{
+
+    /**
+     * getState()
+     * @return the current state of the racer "Failed"
+     */
+    @Override
+    public String getState() {
+        return "Disabled";
+    }
+}

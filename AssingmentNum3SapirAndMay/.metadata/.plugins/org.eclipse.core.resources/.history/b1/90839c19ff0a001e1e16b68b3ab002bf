@@ -1,0 +1,20 @@
+
+package utilities;
+
+//public interface Observer {
+//	public void update(Observable o);
+//}
+
+
+import game.racers.Racer;
+
+public interface Observer {
+    /**
+     * update(Racer ra)
+     * @param ra
+     * updates the racer.
+     */
+    public void update(Racer racer);
+
+
+}

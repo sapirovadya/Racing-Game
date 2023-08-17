@@ -1,0 +1,105 @@
+package game.racers.land;
+
+import game.racers.Racer;
+import utilities.EnumContainer.Color;
+import utilities.EnumContainer.Engine;
+import game.racers.Wheeled;
+
+
+/**
+ * The Car class represents a Car racer in a game.
+ * It extends the Racer abstract class and implements the LandRacer interface.
+ * @author  Sapir Ovadya, id: 318258274
+ * 			May Zohar, id : 315199810
+ * @version 1.0
+ */
+public class Car extends Racer implements LandRacer{
+	
+	private final static String CLASS_NAME = "Car";
+	private final static int DEFAULT_WHEELS = 4;
+	private final static double DEFAULT_MAX_SPEED = 400;
+	private final static double DEFAULT_ACCELERATION = 20;
+	private final static Color DEFAULT_color = Color.RED;
+	private Wheeled wheeled;
+	private Engine engine = Engine.FOURSTROKE;
+	
+	
+	
+	/**
+	 * Constructs a new Car object with default values
+	 */
+	public Car() {
+		
+		this(CLASS_NAME  + " #" + getIdn() ,DEFAULT_MAX_SPEED,DEFAULT_ACCELERATION,DEFAULT_color,DEFAULT_WHEELS);
+	}
+	
+	/**
+	 * Constructs a new Car object with the given values
+	 * @param name
+	 * @param maxSpeed  the maximum speed of the Car.
+	 * @param acceleration  the acceleration of the Car.
+	 * @param color
+	 * @param numOfWheels of the Car.
+	 */
+	public Car(String name, double maxSpeed,double acceleration, Color color, int numOfWheels) {
+		super(name,maxSpeed,acceleration, color);
+		this.wheeled = new Wheeled(numOfWheels);
+		setEngine(engine); 
+	}
+	
+	
+	public Car(Car other) {
+		
+	    super(other.getName(), other.getMaxSpeed(), other.getAcceleration(), other.getColor()); 
+	    this.wheeled = new Wheeled(other.getWheeled().getNumOfWheels());
+	    setEngine(other.getEngine()); 
+	}
+	
+	
+	/**
+	 * Gets the engine type of the Car.
+	 * @return the engine type
+	 */
+	public Engine getEngine() {
+		return engine;
+	}
+
+	/**
+	 * Sets the engine type of the Car.
+	 * @param engine
+	 * @return true if it was set successfully.
+	 */
+	public boolean setEngine(Engine engine) {
+		this.engine = engine;
+		return true;
+	}
+	
+	/**
+	 * Description of the specific details of the Car.
+	 */
+	public String describeSpecific() {
+		return wheeled.describeSpecific() + ", Engine Type: " + engine;
+		
+	}
+	
+	/**
+	 * 
+	 * @return the class name of the Car.
+	 */
+	public String getClassName() {
+		return CLASS_NAME;
+	}
+	
+	/**
+	 * Returns the class name of the Car.
+	 */
+	public String className() {
+		
+		return getClassName();
+	}
+	
+	public Wheeled getWheeled() {
+		return wheeled;
+	}
+}
+

@@ -1,0 +1,13 @@
+package states;
+
+public class Completed implements State{
+	
+    /**
+     * getState()
+     * @return the current state of the racer "Completed"
+     */
+    @Override
+    public String getState() {
+        return "Completed";
+    }
+}

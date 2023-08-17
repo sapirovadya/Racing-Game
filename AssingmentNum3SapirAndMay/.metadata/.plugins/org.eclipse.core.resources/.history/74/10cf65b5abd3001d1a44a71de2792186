@@ -1,0 +1,139 @@
+package game.arenas;
+
+import java.util.ArrayList;
+//import java.util.Iterator;
+
+import game.arenas.exceptions.RacerLimitException;
+import game.arenas.exceptions.RacerTypeException;
+import game.racers.Racer;
+import utilities.Point;
+
+public abstract class Arena {
+
+	private ArrayList<Racer> activeRacers;
+	private ArrayList<Racer> completedRacers;
+	private final double FRICTION;
+	private final int MAX_RACERS;
+	private final static int MIN_Y_GAP = 10;
+	private double length;
+	
+	public Arena(double length, int maxRacers, double friction) {
+		
+		this.FRICTION = friction;
+		this.MAX_RACERS = maxRacers;
+		this.setLength(length);/////////////
+		this.setCompletedRacers(new ArrayList<>());///////////////
+		this.setActiveRacers(new ArrayList<>());///////////////
+		
+		
+	}
+	
+	public ArrayList <Racer> getActiveRacers(){
+		return activeRacers;
+	}
+	
+	public void setActiveRacers(ArrayList <Racer> activeRacers)
+	{
+		this.activeRacers = activeRacers;
+	}
+	
+	public ArrayList <Racer> getCompletedRacers(){
+		return completedRacers;
+	}
+	
+	public void setCompletedRacers(ArrayList <Racer> completedRacers)
+	{
+		this.completedRacers = completedRacers;
+	}
+	
+	
+	public void setLength(double len) {
+		this.length = len;
+	}
+	
+	public double getLength() {
+		return length;
+	}
+	
+	public double getFriction() {
+		return FRICTION;
+	}
+	
+	public int getMaxRacers() {
+		return MAX_RACERS;
+	}
+	
+
+	
+  public void addRacer(Racer newRacer) throws RacerTypeException, RacerLimitException {
+	  
+//	  String typeR = newRacer.className();
+//	  if(typeR == "car")
+//	  if (!typeR.equals("LandRacer")) {
+//          throw new RacerTypeException(newRacer.className(),"String arena");
+//      } 
+	  
+
+      if (activeRacers.size() >= getMaxRacers()) {
+          throw new RacerLimitException(newRacer.getSerialNumber(),getMaxRacers());
+      }
+      activeRacers.add(newRacer);
+  }
+	
+  public void initRace() {
+  	
+      int y = 0;
+      for (Racer racer : activeRacers) {
+      	Point start = new Point (0,y);
+      	Point finish = new Point (getLength(),y);
+          racer.initRace(this,start,finish);
+          y += MIN_Y_GAP;
+      }
+      
+  }
+  
+  
+  public boolean hasActiveRacers() {
+  	return (!activeRacers.isEmpty());
+  }
+  
+  
+  public void playTurn() {
+  	
+  	for(int i=0; i < getActiveRacers().size(); i++) {
+  		getActiveRacers().get(i).move(getFriction());
+  		
+  		if(getActiveRacers().get(i).getCurrntLocation().getX()>= getLength()) {
+  			
+  			crossFinishLine(getActiveRacers().get(i));
+  			i--;
+  		}
+  	}
+  }
+  
+  
+  public void crossFinishLine(Racer racer) {
+  	
+  	completedRacers.add(racer);
+  	activeRacers.remove(racer);
+			
+  }
+  
+  public void showResults() {
+  	
+  	int i=1;
+  	
+  	for(Racer racer : getCompletedRacers() ) {
+  		
+  		System.out.print("#" + 1 + "-> ");
+  		
+  		racer.introduce();
+  		
+  		i++;
+  	}
+  	
+  }
+  
+  
+}
+

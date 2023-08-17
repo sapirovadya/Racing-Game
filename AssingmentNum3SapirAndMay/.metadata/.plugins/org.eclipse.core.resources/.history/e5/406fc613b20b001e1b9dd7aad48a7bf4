@@ -1,0 +1,14 @@
+package states;
+
+public class Active implements State{
+
+    /**
+     * getState()
+     * @return the current state of the racer "Active"
+     */
+    @Override
+    public String getState() {
+        return "Active";
+    }
+
+}

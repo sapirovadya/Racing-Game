@@ -1,0 +1,545 @@
+package gui;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Container;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Graphics;
+import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import factory.RaceBuilder;
+import game.arenas.Arena;
+import game.arenas.air.AerialArena;
+import game.arenas.exceptions.RacerTypeException;
+import game.arenas.land.LandArena;
+import game.arenas.naval.NavalArena;
+import game.racers.Racer;
+import utilities.EnumContainer;
+import game.arenas.exceptions.RacerLimitException;
+import java.lang.reflect.InvocationTargetException;
+
+public class MainRaceGame {
+
+	 public static void main(String[] args) {
+	
+		 
+		 RaceFrame RaceGame = new RaceFrame("Race");
+		 RaceGame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		 RaceGame.setSize(1150,700);
+		 RaceGame.setLocationRelativeTo(null);
+		 RaceGame.setResizable(false);
+		 RaceGame.setVisible(true);
+	 }
+	 
+}
+	 
+class RaceFrame extends JFrame implements ActionListener {
+	 
+	private static final long serialVersionUID = 1L;
+	final static int NUM_IMAGES_JPG = 3;
+	final static int NUM_IMAGES_PNG = 35;
+	final static int START_INDEX = 0;
+    final static String IMAGES_PATH = "C:\\icons\\";
+    final static String IMAGES_SUFIX_ARENAS = ".jpg";
+    final static String IMAGES_SUFIX_RACERS = ".png";
+    final static String COMBO_BOX_CHANGED_COMMAND = "comboBoxChanged";
+	final static String[] ARENAS_TYPES = { "AerialArena", "LandArena", "NavalArena", };
+	final static String[] RACERS_TYPE = { "Airplane", "Bicycle", "SpeedBoat","Horse", "RowBoat", "Car","Helicopter" };
+	final static Color[] COLORS = { Color.BLACK, Color.GREEN, Color.RED, Color.BLUE, Color.YELLOW };
+	private Image[] imagesRacers;
+	private Image[] imagesArena;
+	private static Arena arena;
+	private static RaceBuilder builder = RaceBuilder.getInstance();
+	private static ArrayList<Racer> racer;
+	int NumOfRacers;
+	myPanel RaceGamePanel;
+	JPanel ControlPanel,mainPanel;
+	JComboBox<String> chooseArenas, chooseRacers,ChooseColor;
+	JTextField textLengthA, TextRacersNum, nameText, textAcceleration,textMaxSpeed;
+	JButton btnArenaBuilder,btnAddRacer,btnStartRace,btnShowInfo;
+	
+	
+	public RaceFrame(String title) {
+		
+		super(title);
+		
+		//build the main panel
+		RaceGamePanel = new myPanel();
+	    RaceGamePanel.setLayout(new BorderLayout());
+		RaceGamePanel.setLayout(null);
+		RaceGamePanel.setPreferredSize(new Dimension(1000 , 700));
+
+		
+		//build the panel where the game is shown
+	    ControlPanel = new JPanel();
+	    ControlPanel.setSize(200, 700);
+	    //ControlPanel.setLocation(1300,0);
+	    //MainArena.setLayout(new FlowLayout());
+	    ControlPanel.setLayout(null);
+		
+		//seperator line VERTICAL
+	    JSeparator SeperatorV = new JSeparator(SwingConstants.VERTICAL);
+	    ControlPanel.add(SeperatorV);
+	    SeperatorV.setLocation(0, 0);
+	    SeperatorV.setSize(1, 700);
+	    
+		JLabel Arena = new JLabel("Choose arena: ");
+	    ControlPanel.add(Arena);
+	    Arena.setLocation(10, 10);
+	    Arena.setSize(110, 15);
+	   
+	    
+	    chooseArenas = new JComboBox<String>(ARENAS_TYPES);
+	    chooseArenas.setSelectedIndex(0);
+	    ControlPanel.add(chooseArenas);
+	    chooseArenas.setLocation(10, 30);
+	    chooseArenas.setSize(110, 25);
+	    
+	    JLabel lengthA = new JLabel("Arena length:");
+	    ControlPanel.add(lengthA);
+	    lengthA.setLocation(10, 60);
+	    lengthA.setSize(110, 15);
+	    
+	    
+	    textLengthA = new JTextField("1000");
+	    ControlPanel.add(textLengthA);
+	    textLengthA.setLocation(10, 80);
+	    textLengthA.setSize(110, 25);
+	    
+	    JLabel racersNum = new JLabel("Max racers number:");
+	    ControlPanel.add(racersNum);
+	    racersNum.setLocation(10, 110);
+	    racersNum.setSize(140, 15);
+	    
+	    TextRacersNum = new JTextField("8");
+	    ControlPanel.add(TextRacersNum);
+	    TextRacersNum.setLocation(10, 130);
+	    TextRacersNum.setSize(110, 25);
+	    
+	    btnArenaBuilder = new JButton("Build arena");
+	    ControlPanel.add(btnArenaBuilder);
+	    btnArenaBuilder.setLocation(10, 165);
+	    btnArenaBuilder.setSize(110, 30);
+	    btnArenaBuilder.addActionListener(this);
+		
+	    //seperator line HORIZONTAL
+	    JSeparator SeperatorH1 = new JSeparator(SwingConstants.HORIZONTAL);
+	    ControlPanel.add(SeperatorH1);
+	    SeperatorH1.setLocation(0, 205);
+	    SeperatorH1.setSize(200, 10);
+      
+      
+	    //create a racer
+	    JLabel Racer = new JLabel("Choose racer:");
+	    ControlPanel.add(Racer);
+	    Racer.setLocation(10, 210);
+	    Racer.setSize(110, 15);
+	    
+	    JComboBox<String> chooseRacers = new JComboBox<String>(RACERS_TYPE);
+	    chooseRacers.setSelectedIndex(0);
+	    ControlPanel.add(chooseRacers);
+	    chooseRacers.setLocation(10, 230);
+	    chooseRacers.setSize(110, 25);
+	    
+	    JLabel Colors = new JLabel("Choose color:");
+	    ControlPanel.add(Colors);
+	    Colors.setLocation(10, 260);
+	    Colors.setSize(110, 15);
+      
+	    JComboBox<String> ChooseColor = new JComboBox<String>(COLORS);
+	    ChooseColor.setSelectedIndex(0);
+	    ChooseColor.setLocation(10, 280);
+	    ChooseColor.setSize(110, 25);
+	    ControlPanel.add(ChooseColor);
+	    
+	    JLabel racerName = new JLabel("Racer name:");
+	    ControlPanel.add(racerName);
+	    racerName.setLocation(10, 310);
+	    racerName.setSize(110, 15);
+	    
+	    JTextField nameText = new JTextField();
+		ControlPanel.add(nameText);
+		nameText.setLocation(10, 330);
+		nameText.setSize(110, 25);
+      
+		JLabel maxSpeed = new JLabel("Max speed:");
+		ControlPanel.add(maxSpeed);
+		maxSpeed.setLocation(10, 360);
+		maxSpeed.setSize(110, 15);
+      
+		JTextField textMaxSpeed = new JTextField();
+		textMaxSpeed.setLocation(10, 380);
+		textMaxSpeed.setSize(110, 25);
+		ControlPanel.add(textMaxSpeed);
+		
+		JLabel acceleration = new JLabel("acceleration:");
+		acceleration.setLocation(10, 410);
+		acceleration.setSize(110, 15);
+		ControlPanel.add(acceleration);
+		
+		JTextField textAcceleration = new JTextField();
+		textAcceleration.setLocation(10, 430);
+		textAcceleration.setSize(110, 25);
+		ControlPanel.add(textAcceleration);
+		
+		JButton btnAddRacer = new JButton("Add racer");
+		btnAddRacer.setLocation(10, 465);
+		btnAddRacer.setSize(110, 30);
+		ControlPanel.add(btnAddRacer);
+		//btnAddRacer.addActionListener(this);
+		
+		//seperator line 2 
+		JSeparator Seperator2 = new JSeparator(SwingConstants.HORIZONTAL);
+		ControlPanel.add(Seperator2);
+		Seperator2.setLocation(0, 505);
+		Seperator2.setSize(200, 10);
+      
+      
+      //info buttons and start
+		JButton btnStartRace = new JButton("Start race");
+		btnStartRace.setLocation(10, 520);
+		btnStartRace.setSize(110, 30);
+		ControlPanel.add(btnStartRace);
+		//btnStartRace.addActionListener(this);
+
+		JButton btnShowInfo = new JButton("Show info");
+		btnShowInfo.setLocation(10, 560);
+		btnShowInfo.setSize(110, 30);
+		ControlPanel.add(btnShowInfo);
+		//btnShowInfo.addActionListener(this);
+		this.add(RaceGamePanel, BorderLayout.WEST);
+	    this.add(ControlPanel);
+		
+		loadImagesArena();
+
+	}
+	
+    private void loadImagesArena() {
+    	
+    	imagesArena = new Image[NUM_IMAGES_JPG];
+    	
+    	
+		// Get the images and put them into an array of ImageIcon.
+		for (int i = 0; i < NUM_IMAGES_JPG; i++) {
+		    String imageName = IMAGES_PATH + ARENAS_TYPES[i] + IMAGES_SUFIX_ARENAS;
+		    	try {
+					imagesArena[i] = ImageIO.read(new File(imageName));
+				} 
+		    	catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+    }
+    
+	private void BuildArenaButton() {
+		
+		int SizeArena = Integer.parseInt(textLengthA.getText());
+		NumOfRacers = Integer.parseInt(TextRacersNum.getText());
+
+
+		if (SizeArena < 100 || SizeArena > 3000 || NumOfRacers < 1 || NumOfRacers > 20) {
+			JOptionPane.showMessageDialog(null, "Invalid input values! Please try again");
+		}
+		RaceGamePanel.setImage(imagesArena[chooseArenas.getSelectedIndex()]);
+		
+		if(NumOfRacers > 10) {
+			this.setSize(1150,700 + (NumOfRacers-10)*50);
+			RaceGamePanel.setSize(SizeArena,700 + (NumOfRacers-10)*50);
+		}
+		
+		switch (chooseArenas.getSelectedIndex()) {
+		case 0: {
+			try {
+				arena = builder.buildArena("game.arenas.air.AerialArena", SizeArena, NumOfRacers);
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				System.out.println("Unable to build arena!");
+				arena = new AerialArena();
+			}
+			break;
+		}
+		case 1: {
+			try {
+				arena = builder.buildArena("game.arenas.land.LandArena", SizeArena, NumOfRacers);
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				System.out.println("Unable to build arena!");
+				arena = new LandArena();
+			}
+			break;
+		}
+		case 2 : {
+			try {
+				arena = builder.buildArena("game.arenas.naval.NavalArena", SizeArena, NumOfRacers);
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				System.out.println("Unable to build arena!");
+				arena = new NavalArena();
+			}
+			break;
+		}
+
+		}
+	}
+	
+	
+	private void BuildRacerButton() {
+		//(String racerType, String name, double maxSpeed, double acceleration, utilities.EnumContainer.Color color)
+		//chooseRacers cmb
+		String NameRacer = nameText.getText();
+		double MaxSpeed = Double.parseDouble(textMaxSpeed.getText());
+		Double Acc = Double.parseDouble(textAcceleration.getText());
+		Color ColorRacer = COLORS[ChooseColor.getSelectedIndex()];
+		
+		racer = new ArrayList<>();
+		
+		if(chooseRacers.getSelectedIndex() == 0) {
+			try {
+				addOneRacersToArena(builder.buildWheeledRacer("game.racers.air.Airplane", NameRacer, MaxSpeed,
+						Acc, ColorRacer, 3));
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				throw new RuntimeException(e1);
+			}
+			
+			}
+		if(chooseRacers.getSelectedIndex() == 1) {
+		
+			try {
+				addOneRacersToArena(builder.buildWheeledRacer("game.racers.land.Bicycle", NameRacer, MaxSpeed,
+						Acc, ColorRacer, 3));
+			} 
+			catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				throw new RuntimeException(e1);
+				}
+			}
+		if(chooseRacers.getSelectedIndex() == 2) {
+			try {
+			addOneRacersToArena(builder.buildRacer("game.racers.naval.SpeedBoat", NameRacer, MaxSpeed,
+					Acc, ColorRacer));
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+			throw new RuntimeException(e1);
+		}	
+		}
+		
+		if(chooseRacers.getSelectedIndex() == 3) {
+			try {
+				addOneRacersToArena(builder.buildRacer("game.racers.land.Horse", NameRacer, MaxSpeed,
+						Acc, ColorRacer));
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				throw new RuntimeException(e1);
+			}
+		}
+		if(chooseRacers.getSelectedIndex() == 4) {
+			try {
+				addOneRacersToArena(builder.buildRacer("game.racers.naval.RowBoat", NameRacer, MaxSpeed,
+						Acc, ColorRacer));
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				throw new RuntimeException(e1);
+			}
+			
+		}
+		
+		if(chooseRacers.getSelectedIndex() == 5) {
+			
+			try {
+				addOneRacersToArena(builder.buildWheeledRacer("game.racers.land.Car", NameRacer, MaxSpeed,
+						Acc, ColorRacer, 4));
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				throw new RuntimeException(e1);
+			}
+		}
+		if(chooseRacers.getSelectedIndex() == 6) {
+			try {
+				addOneRacersToArena(builder.buildRacer("game.racers.air.Helicopter", NameRacer, MaxSpeed,
+						Acc, ColorRacer));
+			} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+					| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+				throw new RuntimeException(e1);
+			}
+			
+		}
+		}
+		
+	private static void addOneRacersToArena(Racer racer) {
+		try {
+			arena.addRacer(racer);
+		} catch (RacerLimitException e) {
+			System.out.println("[Error] " + e.getMessage());
+		} catch (RacerTypeException e) {
+			System.out.println("[Error] " + e.getMessage());
+		}
+	}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	}
+    
+	
+	
+//	
+//	switch (racersChoices.getSelectedIndex()) {
+//	case 0: {
+//		try {
+//			addOneRacersToArena(builder.buildWheeledRacer("game.racers.air.Airplane", racerNameinput, MaxSpeedinput,
+//					acceleration, colorInput, 3));
+//		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+//				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+//			throw new RuntimeException(e1);
+//		}
+//		break;
+//	}
+//	case 1: {
+//		try {
+//			addOneRacersToArena(builder.buildRacer("game.racers.air.Helicopter", racerNameinput, MaxSpeedinput,
+//					acceleration, colorInput));
+//		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+//				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+//			throw new RuntimeException(e1);
+//		}
+//		break;
+//	}
+//	case 2: {
+//		try {
+//			addOneRacersToArena(builder.buildRacer("game.racers.land.Horse", racerNameinput, MaxSpeedinput,
+//					acceleration, colorInput));
+//		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+//				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+//			throw new RuntimeException(e1);
+//		}
+//		break;
+//	}
+//	case 3: {
+//		try {
+//			addOneRacersToArena(builder.buildWheeledRacer("game.racers.land.Car", racerNameinput, MaxSpeedinput,
+//					acceleration, colorInput, 4));
+//		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+//				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+//			throw new RuntimeException(e1);
+//		}
+//		break;
+//	}
+//	case 4: {
+//		try {
+//			addOneRacersToArena(builder.buildWheeledRacer("game.racers.land.Bicycle", racerNameinput, MaxSpeedinput,
+//					acceleration, colorInput, 3));
+//		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+//				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+//			throw new RuntimeException(e1);
+//		}
+//		break;
+//	}
+//	case 5: {
+//		try {
+//			addOneRacersToArena(builder.buildRacer("game.racers.naval.RowBoat", racerNameinput, MaxSpeedinput,
+//					acceleration, colorInput));
+//		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+//				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+//			throw new RuntimeException(e1);
+//		}
+//		break;
+//	}
+//	case 6: {
+//		try {
+//			addOneRacersToArena(builder.buildRacer("game.racers.naval.SpeedBoat", racerNameinput, MaxSpeedinput,
+//					acceleration, colorInput));
+//		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException | InstantiationException
+//				| IllegalAccessException | IllegalArgumentException | InvocationTargetException e1) {
+//			throw new RuntimeException(e1);
+//		}
+//		break;
+//	}
+//	}
+//}
+	
+	
+	
+	
+	
+	
+	
+	
+    // Implementation of ActionListener interface.
+    @Override
+    public void actionPerformed(ActionEvent event) {
+
+    	System.out.println("before");
+    	if (event.getSource().equals(btnArenaBuilder)) {
+    		System.out.println("after");
+			BuildArenaButton();
+		}
+    	
+    	if (event.getSource().equals(btnArenaBuilder)) {
+    		System.out.println("after");
+    		BuildRacerButton();
+    	}
+    
+	
+}
+
+class myPanel extends JPanel {
+	private static final long serialVersionUID = 1L;
+	private Image image;
+
+	public myPanel() {
+		
+		// Add border around the display panel.
+		//setBorder(BorderFactory.createLoweredBevelBorder());
+		
+		image = null;
+    }
+	
+	public void setImage(Image img) {
+		image = img;
+		repaint();
+	}
+
+	public void paintComponent(Graphics g) {
+		
+		    super.paintComponent(g);
+		    
+		    Dimension dm = getSize();
+			
+			if(image != null)
+			    g.drawImage(image, 0, 0, dm.width, dm.height, this);
+	   }
+
+}
+
+
+
